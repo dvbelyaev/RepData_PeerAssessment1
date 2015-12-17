@@ -15,8 +15,8 @@ Course web site:
 NOTE: Before 'kniting' this .Rmd document, please, be sure that:
 
 * archive _activity.zip_ has been downloaded and placed into your working
-directory;
-* working directory has been properly set with the _setwd()_;
+directory (WDIR);
+* working directory has been properly set with the _setwd(WDIR)_;
 * package _"lattice"_ has been installed.
 
 Before start of investigation I preserve the current locale and change
