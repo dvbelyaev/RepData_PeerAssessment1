@@ -230,7 +230,8 @@ data[data$interval == "730" & data$weekday == "Friday",
 
 Based on the foregoing in order to fill missing values I merged source
 dataset with _data_by_weekdays_ by the fields _time_ and
-_weekdays_ and replaced missed values with rounded averages (because number of steps are integers):
+_weekdays_ and replaced missed values with rounded averages (because number of
+steps are integers):
 
 ```r
 data_full <- merge(data, data_by_weekdays, by = c("time", "weekday"))
@@ -260,7 +261,7 @@ data_full[data_full$interval == "730" & data_full$weekday == "Friday",
 ## 5498    52 2012-11-30      730  Friday
 ```
 
-### A histogram of the total number of steps taken each day
+### New histogram of the total number of steps taken each day
 
 To make a new histogram of the total number of steps taken each day I summed up
 again all _steps_ for each _date_ but now on the dataset with filled missed
@@ -304,7 +305,7 @@ view the reason is that in order to fill the missing data the source
 dataset was not processed as single unit but by the date-time slices which are
 differ by the amount of days and missed values. In this case more heavy
 slices (in terms of mean amount of steps made by less days) made bigger impact
-to common mean value.
+on the common mean value.
 
 At the same time the gap between mean and median values increased. This mean
 that the distribution of steps per day became less symmetric.
@@ -325,6 +326,7 @@ After that I made a time series plot of the 5-minute intervals
 across all weekday days or weekend days:
 
 ```r
+require(lattice)
 average_steps_by_daytype <- aggregate(steps ~ interval + type_of_day,
                                       data = data, mean)
 xyplot(

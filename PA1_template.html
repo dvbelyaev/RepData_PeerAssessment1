@@ -415,7 +415,8 @@ variable <strong>weekday</strong>:</p>
 
 <p>Based on the foregoing in order to fill missing values I merged source
 dataset with <em>data_by_weekdays</em> by the fields <em>time</em> and
-<em>weekdays</em> and replaced missed values with rounded averages (because number of steps are integers):</p>
+<em>weekdays</em> and replaced missed values with rounded averages (because number of
+steps are integers):</p>
 
 <pre><code class="r">data_full &lt;- merge(data, data_by_weekdays, by = c(&quot;time&quot;, &quot;weekday&quot;))
 data_full$steps &lt;- ifelse(is.na(data_full$steps.x),
@@ -442,7 +443,7 @@ data_full &lt;- data_full[with(data_full, order(date, time)), ]
 ## 5498    52 2012-11-30      730  Friday
 </code></pre>
 
-<h3>A histogram of the total number of steps taken each day</h3>
+<h3>New histogram of the total number of steps taken each day</h3>
 
 <p>To make a new histogram of the total number of steps taken each day I summed up
 again all <em>steps</em> for each <em>date</em> but now on the dataset with filled missed
@@ -483,7 +484,7 @@ view the reason is that in order to fill the missing data the source
 dataset was not processed as single unit but by the date-time slices which are
 differ by the amount of days and missed values. In this case more heavy
 slices (in terms of mean amount of steps made by less days) made bigger impact
-to common mean value.</p>
+on the common mean value.</p>
 
 <p>At the same time the gap between mean and median values increased. This mean
 that the distribution of steps per day became less symmetric.</p>
@@ -502,7 +503,8 @@ I made new variable <strong>type_of_day</strong> which separates weekdays and we
 (as it was required in the task) and the average number of steps, averaged
 across all weekday days or weekend days:</p>
 
-<pre><code class="r">average_steps_by_daytype &lt;- aggregate(steps ~ interval + type_of_day,
+<pre><code class="r">require(lattice)
+average_steps_by_daytype &lt;- aggregate(steps ~ interval + type_of_day,
                                       data = data, mean)
 xyplot(
         data = average_steps_by_daytype,
