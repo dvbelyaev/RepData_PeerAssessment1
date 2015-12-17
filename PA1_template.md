@@ -22,7 +22,8 @@ directory;
 Before start of investigation I preserve the current locale and change
 it to English for correct weekday's names. Saved locale will be restored
 at the end.
-```{r results = "hide", warning = FALSE}
+
+```r
 myLocale <- Sys.getlocale("LC_ALL")
 Sys.setlocale("LC_ALL", "English")
 ```
@@ -32,7 +33,8 @@ Sys.setlocale("LC_ALL", "English")
 ### Loading the data
 
 Next code reads the dataset file _activity.csv_ from supplied zip-archive.
-```{r}
+
+```r
 data <- read.csv(unz("activity.zip", "activity.csv"))
 unlink("hpc.zip")
 ```
@@ -51,15 +53,27 @@ a total of 17,568 observations in this dataset.
 ### Preprocesing of the data
 
 Here is an example fragment of the source data:
-```{r}
+
+```r
 data[1600:1605, ]
+```
+
+```
+##      steps       date interval
+## 1600   511 2012-10-06     1315
+## 1601   506 2012-10-06     1320
+## 1602   486 2012-10-06     1325
+## 1603   171 2012-10-06     1330
+## 1604    12 2012-10-06     1335
+## 1605    24 2012-10-06     1340
 ```
 
 As you can see the variable _interval_ actually contains the time information.
 For example '345' means 3h45m, '1720' means 17h20m e.t.c.
 In order to make results of analysis more readable I converted intervals into 
 time format and made a new variable __time__.
-```{r}
+
+```r
 data$time <- as.POSIXct(strptime(paste(data$interval %/% 100,
                                        data$interval %% 100),
                                  "%H %M"))
@@ -68,7 +82,8 @@ data$time <- as.POSIXct(strptime(paste(data$interval %/% 100,
 In order to ignore missing values in the source dataset (as it is required in
 the first part of assignment) I made a subset of the source data without
 observations with NA values.
-```{r}
+
+```r
 subdata <- na.omit(data)
 ```
 
@@ -78,7 +93,8 @@ subdata <- na.omit(data)
 
 To make a histogram of the total number of steps I summed up all _steps_
 for each _date_:
-```{r}
+
+```r
 steps_per_day <- aggregate(steps ~ date, data = subdata, sum)
 hist(
         steps_per_day$steps,
@@ -93,19 +109,22 @@ hist(
 )
 ```
 
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png) 
+
 ### Mean and median of the total number of steps taken per day
 
 After that I calculated the mean and median of the total number of steps
 taken per day:
-```{r}
+
+```r
 mean_steps_per_day <- mean(steps_per_day$steps)
 median_steps_per_day <- median(steps_per_day$steps)
 ```
 
 The mean of the total number of steps taken per day is about 
-__`r as.character(round(mean_steps_per_day, digits = 2))`__
+__10766.19__
 and the median is
-__`r as.character(round(median_steps_per_day, digits = 2))`__.
+__10765__.
 
 As we can see they are almost equal. This mean that the distribution of steps
 per day is almost symmetric.
@@ -114,18 +133,21 @@ per day is almost symmetric.
 
 Average number of steps across all days I calculated as the mean value of all
 steps aggregated by the time intervals:
-```{r}
+
+```r
 average_steps <- aggregate(steps ~ time + interval, data = subdata, mean)
 ```
 
 Next I found the 5-minute interval which contains the maximum number of steps:
-```{r}
+
+```r
 max_average_steps <- average_steps[which.max(average_steps$steps), ]
 ```
 
 Average daily activity pattern and 5-minute interval with maximum number of
 steps are shown at the next plot:
-```{r}
+
+```r
 plot.new()
 plot(
         average_steps$time, average_steps$steps,
@@ -142,20 +164,23 @@ text(max_average_steps$time,
      pos = 4)
 ```
 
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
+
 As you can see maximum average steps
-__`r as.character(round(max_average_steps$steps, digits = 2))`__ 
-was made during __`r max_average_steps$interval`__ interval.
+__206.17__ 
+was made during __835__ interval.
 
 ## 4. Imputing missing values
 
 ### The total number of missing values in the dataset
 
-```{r}
+
+```r
 na_total <- sum(is.na(data))
 ```
 
 The total number of missing values in the dataset is
-__`r na_total`__.
+__2304__.
 
 ### A strategy for filling in all of the missing values in the dataset
 
@@ -171,26 +196,43 @@ defined by couples 'time of day' and 'day of week'.
 
 To make such transformation I added information about days of week into new
 variable __weekday__:
-```{r}
+
+```r
 data$weekday <- weekdays(as.Date(data$date))
 ```
 
 Next I calculated average values of steps aggregated by _time_ and _weekday_:
-```{r}
+
+```r
 data_by_weekdays <-
         aggregate(steps ~ time + weekday, data = data, mean)
 ```
 
 Here is an example of one date-time slice before the filling of missing values:
-```{r}
+
+```r
 data[data$interval == "730" & data$weekday == "Friday",
      c("steps", "date", "interval", "weekday")]
+```
+
+```
+##       steps       date interval weekday
+## 1243    126 2012-10-05      730  Friday
+## 3259    117 2012-10-12      730  Friday
+## 5275      0 2012-10-19      730  Friday
+## 7291      0 2012-10-26      730  Friday
+## 9307    121 2012-11-02      730  Friday
+## 11323    NA 2012-11-09      730  Friday
+## 13339     0 2012-11-16      730  Friday
+## 15355     0 2012-11-23      730  Friday
+## 17371    NA 2012-11-30      730  Friday
 ```
 
 Based on the foregoing in order to fill missing values I merged source
 dataset with _data_by_weekdays_ by the fields _time_ and
 _weekdays_ and replaced missed values with rounded averages (because number of steps are integers):
-```{r}
+
+```r
 data_full <- merge(data, data_by_weekdays, by = c("time", "weekday"))
 data_full$steps <- ifelse(is.na(data_full$steps.x),
                           round(data_full$steps.y, digits = 0),
@@ -199,9 +241,23 @@ data_full <- data_full[with(data_full, order(date, time)), ]
 ```
 
 Here is the same date-time slice after the filling of missing values:
-```{r}
+
+```r
 data_full[data_full$interval == "730" & data_full$weekday == "Friday",
      c("steps", "date", "interval", "weekday")]
+```
+
+```
+##      steps       date interval weekday
+## 5496   126 2012-10-05      730  Friday
+## 5493   117 2012-10-12      730  Friday
+## 5491     0 2012-10-19      730  Friday
+## 5497     0 2012-10-26      730  Friday
+## 5499   121 2012-11-02      730  Friday
+## 5494    52 2012-11-09      730  Friday
+## 5492     0 2012-11-16      730  Friday
+## 5495     0 2012-11-23      730  Friday
+## 5498    52 2012-11-30      730  Friday
 ```
 
 ### A histogram of the total number of steps taken each day
@@ -209,7 +265,8 @@ data_full[data_full$interval == "730" & data_full$weekday == "Friday",
 To make a new histogram of the total number of steps taken each day I summed up
 again all _steps_ for each _date_ but now on the dataset with filled missed
 values:
-```{r}
+
+```r
 steps_per_day_full <- aggregate(steps ~ date, data = data_full, sum)
 hist(
         steps_per_day_full$steps,
@@ -224,17 +281,20 @@ hist(
 )
 ```
 
+![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17-1.png) 
+
 ### New mean and median of the total number of steps taken per day
 
-```{r}
+
+```r
 new_mean_steps_per_day <- mean(steps_per_day_full$steps)
 new_median_steps_per_day <- median(steps_per_day_full$steps)
 ```
 
 The new mean of the total number of steps taken per day is about 
-__`r as.character(round(new_mean_steps_per_day, digits = 2))`__
+__10821.1__
 and the new median is
-__`r as.character(round(new_median_steps_per_day, digits = 2))`__.
+__11015__.
 
 ### What is the impact of imputing missing data?
 
@@ -253,7 +313,8 @@ that the distribution of steps per day became less symmetric.
 
 To visualise the differences in activity patterns between weekdays and weekends
 I made new variable __type_of_day__ which separates weekdays and weekends:
-```{r}
+
+```r
 data$type_of_day <- ifelse(data$weekday == "Saturday" | 
                            data$weekday == "Sunday",
                            "Weekends", "Weekdays")
@@ -262,7 +323,8 @@ data$type_of_day <- ifelse(data$weekday == "Saturday" |
 After that I made a time series plot of the 5-minute intervals
 (as it was required in the task) and the average number of steps, averaged
 across all weekday days or weekend days:
-```{r}
+
+```r
 average_steps_by_daytype <- aggregate(steps ~ interval + type_of_day,
                                       data = data, mean)
 xyplot(
@@ -277,6 +339,8 @@ xyplot(
 )
 ```
 
+![plot of chunk unnamed-chunk-20](figure/unnamed-chunk-20-1.png) 
+
 As you can see patterns of activities during weekdays and weekends are visibly
 different:
 
@@ -285,6 +349,7 @@ and at the end of the afternoon;
 * activity during weekends is distributed along the day more uniformly.
 
 At the end, as I promised, I restore the default locale:
-```{r results = "hide", warning = FALSE}
+
+```r
 Sys.setlocale("LC_ALL", myLocale)
 ```
