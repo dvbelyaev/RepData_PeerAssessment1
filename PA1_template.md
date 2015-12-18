@@ -12,7 +12,7 @@ Course web site:
 
 * Dataset: [Activity monitoring data](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip) [52K]
 
-NOTE: Before 'kniting' this .Rmd document, please, be sure that:
+NOTE: Before 'knitring' this .Rmd document, please, be sure that:
 
 * archive _activity.zip_ has been downloaded and placed into your working
 directory (WDIR);
@@ -166,7 +166,9 @@ text(max_average_steps$time,
 
 ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
 
-As you can see maximum average steps
+### Which 5-minute interval contains the maximum number of steps?
+
+As you can see from _max_average_steps_ maximum average steps
 __206.17__ 
 was made during __835__ interval.
 
@@ -322,19 +324,19 @@ data$type_of_day <- ifelse(data$weekday == "Saturday" |
 ```
 
 After that I made a time series plot of the 5-minute intervals
-(as it was required in the task) and the average number of steps, averaged
+(in time format) and the average number of steps, averaged
 across all weekday days or weekend days:
 
 ```r
 require(lattice)
-average_steps_by_daytype <- aggregate(steps ~ interval + type_of_day,
+average_steps_by_daytype <- aggregate(steps ~ time + type_of_day,
                                       data = data, mean)
 xyplot(
         data = average_steps_by_daytype,
-        steps ~ interval | type_of_day,
+        steps ~ time | type_of_day,
         main = "Average number of steps by type of days",
-        xlab = "Interval",
-        ylab = "Steps",
+        xlab = "Time (interval)",
+        ylab = "Number of steps",
         layout = c(1,2),
         scales = list(format = "%H:%M"),
         type = "l"
